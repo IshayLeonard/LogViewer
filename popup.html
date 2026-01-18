@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IVR Log Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>IVR Log Visualizer</h2>
+    <div class="input-section">
+      <textarea id="jsonInput" placeholder="Paste your JSON log here..."></textarea>
+      <button id="visualizeBtn">Visualize Flow</button>
+    </div>
+
+    <div class="tab-box">
+      <button class="tab-btn active" data-tab="timeline">IVR Flow</button>
+      <button class="tab-btn" data-tab="participantData">Participant Data</button>
+    </div>
+    
+    <div id="timeline" class="tab-content active"></div>
+    
+    <div id="participantData" class="tab-content">
+      <table id="participantTable">
+        <thead>
+          <tr><th>Key</th><th>Value</th></tr>
+        </thead>
+        <tbody id="participantBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
