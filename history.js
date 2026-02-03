@@ -37,15 +37,8 @@ export function saveToHistory(rawJsonString) {
       rawJson: rawJsonString,
     };
 
-    const history = getHistory();
-
-    // Add to top
-    history.unshift(newRecord);
-
-    // Keep only last 15
-    if (history.length > MAX_HISTORY) {
-      history.length = MAX_HISTORY;
-    }
+    // Add to top and keep only last 15
+    const history = [newRecord, ...getHistory()].slice(0, MAX_HISTORY);
 
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
