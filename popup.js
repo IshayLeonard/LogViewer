@@ -4,17 +4,40 @@ import {
   renderParticipantData,
   renderHistoryList,
 } from "./ui.js";
-import { saveToHistory, getHistory, clearHistory } from "./history.js";
+import { saveToHistory, getHistory } from "./history.js";
 
 // DOM Elements
+const homeView = document.getElementById("home-view");
+const visualizationView = document.getElementById("visualization-view");
+
+const jsonInput = document.getElementById("jsonInput");
 const visualizeBtn = document.getElementById("visualizeBtn");
-const historyBtn = document.getElementById("historyBtn");
-const historyModal = document.getElementById("historyModal");
-const closeModal = document.getElementById("closeModal");
 const historyListContainer = document.getElementById("historyList");
+
+const backBtn = document.getElementById("backBtn");
 const timelineContainer = document.getElementById("timeline");
 const participantBody = document.getElementById("participantBody");
-const jsonInput = document.getElementById("jsonInput");
+
+// State Management
+function showHome() {
+  homeView.classList.remove("hidden");
+  visualizationView.classList.add("hidden");
+
+  // Refresh history list when showing home
+  const history = getHistory();
+  renderHistoryList(history, historyListContainer, (item) => {
+    // On selection of a history item
+    jsonInput.value = item.rawJson;
+    if (visualizeLog(item.rawJson)) {
+      showVisualization();
+    }
+  });
+}
+
+function showVisualization() {
+  homeView.classList.add("hidden");
+  visualizationView.classList.remove("hidden");
+}
 
 // Main Visualization Logic
 function visualizeLog(inputJsonString) {
@@ -34,6 +57,8 @@ function visualizeLog(inputJsonString) {
 
     return true; // Success
   } catch (e) {
+    // If error, we still show visualization view but with error message
+    showVisualization();
     timelineContainer.innerHTML = `<div class="error">Invalid JSON: ${e.message}</div>`;
     return false;
   }
@@ -43,33 +68,14 @@ function visualizeLog(inputJsonString) {
 visualizeBtn.addEventListener("click", () => {
   const input = jsonInput.value;
   if (visualizeLog(input)) {
-    // Only save to history if visualization was successful
     saveToHistory(input);
+    showVisualization();
   }
 });
 
-// Event: History Button (Open Modal)
-historyBtn.addEventListener("click", () => {
-  const history = getHistory();
-  renderHistoryList(history, historyListContainer, (item) => {
-    // On selection of a history item
-    jsonInput.value = item.rawJson;
-    visualizeLog(item.rawJson);
-    historyModal.classList.add("hidden");
-  });
-  historyModal.classList.remove("hidden");
-});
-
-// Event: Close Modal
-closeModal.addEventListener("click", () => {
-  historyModal.classList.add("hidden");
-});
-
-// Close modal when clicking outside
-window.addEventListener("click", (e) => {
-  if (e.target === historyModal) {
-    historyModal.classList.add("hidden");
-  }
+// Event: Back Button
+backBtn.addEventListener("click", () => {
+  showHome();
 });
 
 // Tab Switching Logic
@@ -82,3 +88,6 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
     document.getElementById(btn.dataset.tab).classList.add("active");
   });
 });
+
+// Initialize
+showHome();

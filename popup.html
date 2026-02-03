@@ -9,47 +9,47 @@
   <body>
     <div class="container">
       <h2>IVR Log Visualizer</h2>
-      <div class="input-section">
-        <textarea
-          id="jsonInput"
-          placeholder="Paste your JSON log here..."
-        ></textarea>
-        <div class="button-group">
+
+      <!-- View 1: Home (Input + History) -->
+      <div id="home-view">
+        <div class="input-section">
+          <textarea
+            id="jsonInput"
+            placeholder="Paste your JSON log here..."
+          ></textarea>
           <button id="visualizeBtn">Visualize Flow</button>
-          <button id="historyBtn" class="secondary-btn">History</button>
+        </div>
+
+        <div class="history-section">
+          <h3>Recent History</h3>
+          <div id="historyList" class="history-list"></div>
         </div>
       </div>
 
-      <div class="tab-box">
-        <button class="tab-btn active" data-tab="timeline">IVR Flow</button>
-        <button class="tab-btn" data-tab="participantData">
-          Participant Data
-        </button>
-      </div>
+      <!-- View 2: Visualization -->
+      <div id="visualization-view" class="hidden">
+        <button id="backBtn" class="back-btn">← Back</button>
 
-      <div id="timeline" class="tab-content active"></div>
-
-      <div id="participantData" class="tab-content">
-        <table id="participantTable">
-          <thead>
-            <tr>
-              <th>Key</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody id="participantBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- History Modal -->
-    <div id="historyModal" class="modal hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>History (Last 15)</h3>
-          <span id="closeModal" class="close">&times;</span>
+        <div class="tab-box">
+          <button class="tab-btn active" data-tab="timeline">IVR Flow</button>
+          <button class="tab-btn" data-tab="participantData">
+            Participant Data
+          </button>
         </div>
-        <div id="historyList" class="history-list"></div>
+
+        <div id="timeline" class="tab-content active"></div>
+
+        <div id="participantData" class="tab-content">
+          <table id="participantTable">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="participantBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
