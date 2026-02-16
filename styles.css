@@ -7,7 +7,9 @@ body {
   font-family: "Segoe UI", system-ui, sans-serif;
   background-color: #f0f2f5;
   padding: 15px;
+  /* Default width for popup context. Overridden in visualizer.html */
   width: 700px;
+  margin: 0;
 }
 
 /* Utilities */

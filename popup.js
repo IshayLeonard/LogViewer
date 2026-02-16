@@ -28,9 +28,7 @@ function showHome() {
   renderHistoryList(history, historyListContainer, (item) => {
     // On selection of a history item
     jsonInput.value = item.rawJson;
-    if (visualizeLog(item.rawJson)) {
-      showVisualization();
-    }
+    handleVisualize(item.rawJson);
   });
 }
 
@@ -39,8 +37,35 @@ function showVisualization() {
   visualizationView.classList.remove("hidden");
 }
 
-// Main Visualization Logic
-function visualizeLog(inputJsonString) {
+// Main Visualization Routing
+async function handleVisualize(inputJsonString) {
+  const settings = await chrome.storage.local.get({ visMode: "tab" }); // Default to tab
+  const mode = settings.visMode;
+
+  // Save for the external view to pick up
+  if (mode === "tab" || mode === "window") {
+    await chrome.storage.local.set({ pending_log_data: inputJsonString });
+  }
+
+  if (mode === "tab") {
+    chrome.tabs.create({ url: "visualizer.html" });
+  } else if (mode === "window") {
+    chrome.windows.create({
+      url: "visualizer.html",
+      type: "popup",
+      width: 1200,
+      height: 800,
+    });
+  } else {
+    // Popup Mode (Default fallback or explicit)
+    if (visualizeLogInPopup(inputJsonString)) {
+      showVisualization();
+    }
+  }
+}
+
+// In-Popup Rendering (Renamed from original visualizeLog)
+function visualizeLogInPopup(inputJsonString) {
   timelineContainer.innerHTML = "";
   participantBody.innerHTML = "";
 
@@ -67,9 +92,13 @@ function visualizeLog(inputJsonString) {
 // Event: Visualize Button
 visualizeBtn.addEventListener("click", () => {
   const input = jsonInput.value;
-  if (visualizeLog(input)) {
+  // We validate basic JSON structure before saving/routing
+  try {
+    JSON.parse(input);
     saveToHistory(input);
-    showVisualization();
+    handleVisualize(input);
+  } catch (e) {
+    alert("Invalid JSON format");
   }
 });
 
