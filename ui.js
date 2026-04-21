@@ -1,3 +1,9 @@
+import {
+  highlightErrorWords,
+  highlightWarningWords,
+  getLogHighlights,
+} from "./highlighter.js";
+
 export function renderGroupedLogs(groups, container) {
   if (groups.length === 0) {
     container.innerHTML = '<div class="info">No matching IVR logs found.</div>';
@@ -28,16 +34,34 @@ export function renderGroupedLogs(groups, container) {
       const step = document.createElement("div");
       step.className = "log-step";
 
-      // Check if value is complex (JSON)
-      let valHtml = log.val;
-      if (log.val.includes("{") || log.val.length > 50) {
-        valHtml = `<div class="code-block">${log.val}</div>`;
+      // ── Cross-field highlight checks ──
+      const highlights = getLogHighlights(log);
+
+      // ── Highlight type text ──
+      const typeHtml = highlightErrorWords(log.type);
+
+      // ── Highlight value text ──
+      let valHtml;
+      if (highlights.isReturnCodeError) {
+        // Entire val is the error indicator (e.g. "8")
+        valHtml = `<span class="highlight-error">${log.val}</span>`;
+      } else if (highlights.isScheduleWarning) {
+        // Only the warning words inside val get highlighted (no error scan needed)
+        valHtml = highlightWarningWords(log.val);
+      } else {
+        // Apply both: errors first, then warnings on the same text
+        valHtml = highlightWarningWords(highlightErrorWords(log.val));
       }
 
-      // Check if desc is complex (JSON)
-      let descHtml = log.desc;
+      // ── Highlight desc text ──
+      let descHtml = highlightWarningWords(highlightErrorWords(log.desc));
+
+      // ── Wrap complex / long content in code-block ──
+      if (log.val.includes("{") || log.val.length > 50) {
+        valHtml = `<div class="code-block">${valHtml}</div>`;
+      }
       if (log.desc.includes("{")) {
-        descHtml = `<div class="code-block">${log.desc}</div>`;
+        descHtml = `<div class="code-block">${descHtml}</div>`;
       }
 
       step.innerHTML = `
@@ -47,7 +71,7 @@ export function renderGroupedLogs(groups, container) {
                 </div>
                 <div class="step-main">
                     <div class="step-header">
-                        <span class="step-type">${log.type}</span>
+                        <span class="step-type">${typeHtml}</span>
                         <span class="step-point">${log.point}</span>
                     </div>
                     <div class="step-body">

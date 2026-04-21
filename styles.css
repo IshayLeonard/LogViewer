@@ -281,6 +281,24 @@ button:hover {
   overflow-y: auto;
 }
 
+/* ── Inline Highlights (Error / Warning) ── */
+.highlight-error {
+  color: #dc2626;
+}
+
+.highlight-warning {
+  color: #b45309;
+}
+
+/* Inside dark code-blocks keep readability */
+.code-block .highlight-error {
+  color: #fca5a5;
+}
+
+.code-block .highlight-warning {
+  color: #fde68a;
+}
+
 .error {
   color: red;
   text-align: center;
