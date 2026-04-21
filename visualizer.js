@@ -1,12 +1,8 @@
-import { parseAllData, groupLogsByModule, filterGroups } from "./parser.js";
-import { renderGroupedLogs, renderParticipantData, renderFilterBar } from "./ui.js";
+import { parseAllData, groupLogsByModule } from "./parser.js";
+import { renderGroupedLogs, renderParticipantData } from "./ui.js";
 
-const filterBarContainer  = document.getElementById("filterBar");
-const timelineGroups      = document.getElementById("timelineGroups");
-const participantBody     = document.getElementById("participantBody");
-
-// Full unfiltered groups – kept in module scope so the filter callback can access them
-let allGroups = [];
+const timelineContainer = document.getElementById("timeline");
+const participantBody = document.getElementById("participantBody");
 
 // Initialize
 document.addEventListener("DOMContentLoaded", async () => {
@@ -20,13 +16,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const data = await chrome.storage.local.get("pending_log_data");
   if (data.pending_log_data) {
     visualizeLog(data.pending_log_data);
+    // Optional: Clear after loading so it doesn't persist forever?
+    // Usually better to keep it so refresh works.
   } else {
-    timelineGroups.innerHTML =
+    timelineContainer.innerHTML =
       '<div class="error">No data found to visualize.</div>';
   }
 });
 
-// Tab Switching Logic
+// Tab Switching Logic (Copied from popup.js - logic is identical)
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document
@@ -38,31 +36,20 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 });
 
 function visualizeLog(inputJsonString) {
-  timelineGroups.innerHTML = "";
+  timelineContainer.innerHTML = "";
   participantBody.innerHTML = "";
 
   try {
     const json = JSON.parse(inputJsonString);
     const { ivrLogs, otherData } = parseAllData(json);
 
-    allGroups = groupLogsByModule(ivrLogs);
-
-    // Render filter bar – options are always built from the full dataset
-    renderFilterBar(allGroups, filterBarContainer, (filters) => {
-      const filtered = filterGroups(allGroups, filters);
-      renderGroupedLogs(filtered, timelineGroups);
-
-      // Update the log count shown in the bar
-      const visibleCount = filtered.reduce((sum, g) => sum + g.entries.length, 0);
-      filterBarContainer.updateCount(visibleCount);
-    });
-
-    // Initial render (no filters active)
-    renderGroupedLogs(allGroups, timelineGroups);
+    // Render Flow
+    const groupedLogs = groupLogsByModule(ivrLogs);
+    renderGroupedLogs(groupedLogs, timelineContainer);
 
     // Render Participant Data
     renderParticipantData(otherData, participantBody);
   } catch (e) {
-    timelineGroups.innerHTML = `<div class="error">Invalid JSON: ${e.message}</div>`;
+    timelineContainer.innerHTML = `<div class="error">Invalid JSON: ${e.message}</div>`;
   }
 }
