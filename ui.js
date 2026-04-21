@@ -5,6 +5,7 @@ import {
 } from "./highlighter.js";
 
 export function renderGroupedLogs(groups, container) {
+  container.innerHTML = "";
   if (groups.length === 0) {
     container.innerHTML = '<div class="info">No matching IVR logs found.</div>';
     return;
@@ -133,4 +134,91 @@ export function renderHistoryList(historyData, container, onSelect) {
     div.onclick = () => onSelect(item);
     container.appendChild(div);
   });
+}
+
+/**
+ * Renders the search + filter bar above the timeline.
+ *
+ * @param {Array}    allGroups       Full (unfiltered) grouped logs — used to
+ *                                   populate dropdown options.
+ * @param {Element}  container       The #filterBar DOM element.
+ * @param {Function} onFilter        Called with { module, type, search } whenever
+ *                                   any control changes.
+ */
+export function renderFilterBar(allGroups, container, onFilter) {
+  // ── Collect unique modules and types from the full dataset ──
+  const modules = [...new Set(allGroups.map((g) => g.module))].sort();
+  const types = [
+    ...new Set(allGroups.flatMap((g) => g.entries.map((e) => e.type))),
+  ].sort();
+
+  const totalLogs = allGroups.reduce((sum, g) => sum + g.entries.length, 0);
+
+  container.innerHTML = `
+    <div class="filter-bar">
+      <input
+        type="text"
+        id="filterSearch"
+        class="filter-input"
+        placeholder="Search logs…"
+        autocomplete="off"
+      />
+      <select id="filterModule" class="filter-select">
+        <option value="">All Modules</option>
+        ${modules.map((m) => `<option value="${m}">${m}</option>`).join("")}
+      </select>
+      <select id="filterType" class="filter-select">
+        <option value="">All Types</option>
+        ${types.map((t) => `<option value="${t}">${t}</option>`).join("")}
+      </select>
+      <button id="filterClear" class="filter-clear-btn" title="Clear filters">✕</button>
+      <span id="filterCount" class="filter-count">${totalLogs} logs</span>
+    </div>
+  `;
+
+  const searchInput = container.querySelector("#filterSearch");
+  const moduleSelect = container.querySelector("#filterModule");
+  const typeSelect = container.querySelector("#filterType");
+  const clearBtn = container.querySelector("#filterClear");
+  const countEl = container.querySelector("#filterCount");
+
+  // Debounce helper – avoids re-rendering on every keystroke
+  let debounceTimer;
+  const triggerFilter = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const filters = {
+        module: moduleSelect.value,
+        type: typeSelect.value,
+        search: searchInput.value.trim(),
+      };
+      const hasFilter = filters.module || filters.type || filters.search;
+      clearBtn.style.opacity = hasFilter ? "1" : "0.4";
+      onFilter(filters);
+    }, 200);
+  };
+
+  // Update the results counter (called from outside via closure update)
+  container.updateCount = (visibleLogs) => {
+    countEl.textContent =
+      visibleLogs === totalLogs
+        ? `${totalLogs} logs`
+        : `${visibleLogs} / ${totalLogs} logs`;
+    countEl.classList.toggle("filter-count--active", visibleLogs !== totalLogs);
+  };
+
+  searchInput.addEventListener("input", triggerFilter);
+  moduleSelect.addEventListener("change", triggerFilter);
+  typeSelect.addEventListener("change", triggerFilter);
+
+  clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    moduleSelect.value = "";
+    typeSelect.value = "";
+    clearBtn.style.opacity = "0.4";
+    triggerFilter();
+  });
+
+  // Initial state: clear button dimmed
+  clearBtn.style.opacity = "0.4";
 }

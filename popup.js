@@ -1,8 +1,9 @@
-import { parseAllData, groupLogsByModule } from "./parser.js";
+import { parseAllData, groupLogsByModule, filterGroups } from "./parser.js";
 import {
   renderGroupedLogs,
   renderParticipantData,
   renderHistoryList,
+  renderFilterBar,
 } from "./ui.js";
 import { saveToHistory, getHistory } from "./history.js";
 
@@ -14,9 +15,13 @@ const jsonInput = document.getElementById("jsonInput");
 const visualizeBtn = document.getElementById("visualizeBtn");
 const historyListContainer = document.getElementById("historyList");
 
-const backBtn = document.getElementById("backBtn");
-const timelineContainer = document.getElementById("timeline");
-const participantBody = document.getElementById("participantBody");
+const backBtn             = document.getElementById("backBtn");
+const filterBarContainer  = document.getElementById("filterBar");
+const timelineGroups      = document.getElementById("timelineGroups");
+const participantBody     = document.getElementById("participantBody");
+
+// Full unfiltered groups – kept in module scope for the filter callback
+let allGroups = [];
 
 // State Management
 function showHome() {
@@ -64,27 +69,35 @@ async function handleVisualize(inputJsonString) {
   }
 }
 
-// In-Popup Rendering (Renamed from original visualizeLog)
+// In-Popup Rendering
 function visualizeLogInPopup(inputJsonString) {
-  timelineContainer.innerHTML = "";
+  timelineGroups.innerHTML = "";
   participantBody.innerHTML = "";
 
   try {
     const json = JSON.parse(inputJsonString);
     const { ivrLogs, otherData } = parseAllData(json);
 
-    // Render Flow
-    const groupedLogs = groupLogsByModule(ivrLogs);
-    renderGroupedLogs(groupedLogs, timelineContainer);
+    allGroups = groupLogsByModule(ivrLogs);
+
+    // Render filter bar – options built from full dataset
+    renderFilterBar(allGroups, filterBarContainer, (filters) => {
+      const filtered = filterGroups(allGroups, filters);
+      renderGroupedLogs(filtered, timelineGroups);
+      const visibleCount = filtered.reduce((sum, g) => sum + g.entries.length, 0);
+      filterBarContainer.updateCount(visibleCount);
+    });
+
+    // Initial render (no filters)
+    renderGroupedLogs(allGroups, timelineGroups);
 
     // Render Participant Data
     renderParticipantData(otherData, participantBody);
 
-    return true; // Success
+    return true;
   } catch (e) {
-    // If error, we still show visualization view but with error message
     showVisualization();
-    timelineContainer.innerHTML = `<div class="error">Invalid JSON: ${e.message}</div>`;
+    timelineGroups.innerHTML = `<div class="error">Invalid JSON: ${e.message}</div>`;
     return false;
   }
 }
