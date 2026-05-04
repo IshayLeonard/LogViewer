@@ -1,5 +1,5 @@
-import { parseAllData, groupLogsByModule } from "./parser.js";
-import { renderGroupedLogs, renderParticipantData } from "./ui.js";
+import { parseAllData } from "./parser.js";
+import { setupFilters, renderParticipantData } from "./ui.js";
 
 const timelineContainer = document.getElementById("timeline");
 const participantBody = document.getElementById("participantBody");
@@ -43,9 +43,8 @@ function visualizeLog(inputJsonString) {
     const json = JSON.parse(inputJsonString);
     const { ivrLogs, otherData } = parseAllData(json);
 
-    // Render Flow
-    const groupedLogs = groupLogsByModule(ivrLogs);
-    renderGroupedLogs(groupedLogs, timelineContainer);
+    // Render Flow (with search + filter bar)
+    setupFilters(ivrLogs, timelineContainer);
 
     // Render Participant Data
     renderParticipantData(otherData, participantBody);
