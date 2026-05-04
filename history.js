@@ -2,7 +2,7 @@ import { calculateDuration } from "./utils.js";
 import { parseAllData } from "./parser.js";
 
 const HISTORY_KEY = "ivr_log_history";
-const MAX_HISTORY = 15;
+const MAX_HISTORY = 70;
 
 export function getHistory() {
   try {
