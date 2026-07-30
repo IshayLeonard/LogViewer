@@ -8,5 +8,16 @@
     "default_icon": "icon.png"
   },
   "options_page": "options.html",
-  "permissions": ["storage"]
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": [
+    "https://*.mypurecloud.com/*",
+    "https://*.mypurecloud.ie/*",
+    "https://*.mypurecloud.jp/*",
+    "https://*.mypurecloud.de/*",
+    "https://*.pure.cloud/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
 }

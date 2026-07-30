@@ -14,7 +14,7 @@ export function getHistory() {
   }
 }
 
-export function saveToHistory(rawJsonString) {
+export function saveToHistory(rawJsonString, conversationId = null) {
   try {
     const json = JSON.parse(rawJsonString);
     // We parse it temporarily just to extract metadata
@@ -34,6 +34,7 @@ export function saveToHistory(rawJsonString) {
       duration: duration,
       startModule: startModule,
       logCount: ivrLogs.length,
+      conversationId: conversationId,
       rawJson: rawJsonString,
     };
 

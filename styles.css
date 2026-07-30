@@ -40,16 +40,111 @@ body {
   margin-bottom: 20px;
 }
 
-textarea {
+textarea, #conversationIdInput {
   width: 100%;
-  height: 100px;
-  /* Slightly taller for home view */
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-family: monospace;
   font-size: 11px;
+}
+
+textarea {
+  height: 100px;
   resize: vertical;
+}
+
+#conversationIdInput {
+  font-size: 13px;
+  font-family: inherit;
+  margin-bottom: 10px;
+}
+
+.mode-toggles {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+.mode-toggle {
+  color: #666;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mode-toggle:hover {
+  color: #333;
+}
+
+.mode-toggle.active {
+  color: #0066cc;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.divider {
+  color: #ddd;
+}
+
+.fetch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.fetch-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-top: 4px;
+}
+
+.auth-status-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.org-name-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
+.auth-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.auth-badge.connected {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.auth-badge.disconnected {
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+
+.purpose-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.purpose-selector label {
+  font-size: 12px;
+  color: #555;
+  font-weight: 600;
 }
 
 button {
@@ -63,10 +158,17 @@ button {
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
+  transition: all 0.2s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background-color: #0052a3;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* Back Button */

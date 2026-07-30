@@ -12,7 +12,34 @@
 
       <!-- View 1: Home (Input + History) -->
       <div id="home-view">
-        <div class="input-section">
+        <!-- Mode toggles -->
+        <div id="modeToggleContainer" class="mode-toggles hidden">
+          <a href="#" id="showFetchMode" class="mode-toggle active">Fetch by ID</a>
+          <span class="divider">|</span>
+          <a href="#" id="showPasteMode" class="mode-toggle">Paste JSON</a>
+        </div>
+
+        <div class="input-section hidden" id="fetchSection">
+          <div class="fetch-header">
+            <span class="fetch-title">Genesys Cloud</span>
+            <div class="auth-status-container">
+              <div id="orgNameLabel" class="org-name-label hidden"></div>
+              <span id="authStatus" class="auth-badge disconnected">🔴 Not Connected</span>
+            </div>
+          </div>
+          <input type="text" id="conversationIdInput" placeholder="Enter Conversation ID..." />
+          <div class="purpose-selector">
+            <label for="purposeSelect">Participant Purpose:</label>
+            <select id="purposeSelect" class="filter-select">
+              <option value="External" selected>External (Voice IVR)</option>
+              <option value="customer">customer (Digital Bots)</option>
+              <option value="Internal">Internal</option>
+            </select>
+          </div>
+          <button id="fetchBtn" disabled>Fetch Participant Data</button>
+        </div>
+
+        <div class="input-section" id="pasteSection">
           <textarea
             id="jsonInput"
             placeholder="Paste your JSON log here..."

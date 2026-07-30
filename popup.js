@@ -1,18 +1,30 @@
-import { parseAllData } from "./parser.js";
+import { parseAllData, extractAttributesFromConversation } from "./parser.js";
 import {
   setupFilters,
   renderParticipantData,
   renderHistoryList,
 } from "./ui.js";
 import { saveToHistory, getHistory } from "./history.js";
+import { checkAuthAndUpdateIcon, getCachedSession } from "./auth.js";
 
 // DOM Elements
 const homeView = document.getElementById("home-view");
 const visualizationView = document.getElementById("visualization-view");
 
+const modeToggleContainer = document.getElementById("modeToggleContainer");
+const showFetchModeBtn = document.getElementById("showFetchMode");
+const showPasteModeBtn = document.getElementById("showPasteMode");
+const fetchSection = document.getElementById("fetchSection");
+const pasteSection = document.getElementById("pasteSection");
+
 const jsonInput = document.getElementById("jsonInput");
 const visualizeBtn = document.getElementById("visualizeBtn");
 const historyListContainer = document.getElementById("historyList");
+
+const conversationIdInput = document.getElementById("conversationIdInput");
+const purposeSelect = document.getElementById("purposeSelect");
+const fetchBtn = document.getElementById("fetchBtn");
+const authStatus = document.getElementById("authStatus");
 
 const backBtn = document.getElementById("backBtn");
 const timelineContainer = document.getElementById("timeline");
@@ -36,6 +48,58 @@ function showVisualization() {
   homeView.classList.add("hidden");
   visualizationView.classList.remove("hidden");
 }
+
+const orgNameLabel = document.getElementById("orgNameLabel");
+
+// Auth and Mode Management
+async function initAuth() {
+  const { isAuthenticated, session, error } = await checkAuthAndUpdateIcon();
+  
+  modeToggleContainer.classList.remove("hidden");
+  
+  if (isAuthenticated) {
+    if (session && session.orgName) {
+      orgNameLabel.textContent = `${session.orgName} (${session.environment})`;
+      orgNameLabel.classList.remove("hidden");
+    }
+    authStatus.textContent = "🟢 Connected";
+    authStatus.title = "Connected to Genesys Cloud";
+    authStatus.className = "auth-badge connected";
+    fetchBtn.disabled = false;
+    showMode("fetch");
+  } else {
+    orgNameLabel.classList.add("hidden");
+    authStatus.innerHTML = `🔴 Not Connected <span style="font-size: 9px; display: block; font-weight: normal; margin-top: 2px;">(${error || 'Unknown error'})</span>`;
+    authStatus.title = error || 'Unknown error';
+    authStatus.className = "auth-badge disconnected";
+    fetchBtn.disabled = true;
+    showMode("paste");
+  }
+}
+
+function showMode(mode) {
+  if (mode === "fetch") {
+    fetchSection.classList.remove("hidden");
+    pasteSection.classList.add("hidden");
+    showFetchModeBtn.classList.add("active");
+    showPasteModeBtn.classList.remove("active");
+  } else {
+    pasteSection.classList.remove("hidden");
+    fetchSection.classList.add("hidden");
+    showPasteModeBtn.classList.add("active");
+    showFetchModeBtn.classList.remove("active");
+  }
+}
+
+showFetchModeBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  showMode("fetch");
+});
+
+showPasteModeBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  showMode("paste");
+});
 
 // Main Visualization Routing
 async function handleVisualize(inputJsonString) {
@@ -101,6 +165,69 @@ visualizeBtn.addEventListener("click", () => {
   }
 });
 
+// Event: Fetch Button
+fetchBtn.addEventListener("click", () => {
+  const conversationId = conversationIdInput.value.trim();
+  if (!conversationId) {
+    alert("Please enter a conversation ID.");
+    return;
+  }
+
+  const session = getCachedSession();
+  if (!session) {
+    alert("Not authenticated with Genesys Cloud.");
+    return;
+  }
+
+  const purpose = purposeSelect.value;
+  fetchBtn.textContent = "Fetching...";
+  fetchBtn.disabled = true;
+
+  chrome.runtime.sendMessage(
+    {
+      action: "fetch_conversation",
+      environment: session.environment,
+      token: session.token,
+      conversationId: conversationId,
+    },
+    (response) => {
+      fetchBtn.textContent = "Fetch Participant Data";
+      fetchBtn.disabled = false;
+
+      if (chrome.runtime.lastError) {
+        alert("Extension communication error.");
+        return;
+      }
+
+      if (!response.success) {
+        alert(`Failed to fetch: ${response.error}`);
+        if (response.error.includes("401")) {
+          // Token expired, re-check auth to update UI
+          initAuth();
+        }
+        return;
+      }
+
+      const attributes = extractAttributesFromConversation(response.data, purpose);
+      
+      if (Object.keys(attributes).length === 0) {
+        alert(`No attributes found for purpose: ${purpose}`);
+        return;
+      }
+
+      const rawJsonString = JSON.stringify(attributes, null, 2);
+      
+      try {
+        JSON.parse(rawJsonString);
+        saveToHistory(rawJsonString, conversationId);
+        handleVisualize(rawJsonString);
+      } catch (e) {
+        alert("Failed to process attributes JSON.");
+      }
+    }
+  );
+});
+
 // Event: Back Button
 backBtn.addEventListener("click", () => {
   showHome();
@@ -119,3 +246,5 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 
 // Initialize
 showHome();
+initAuth();
+
