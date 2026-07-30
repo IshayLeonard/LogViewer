@@ -18,6 +18,12 @@ export function highlightErrorWords(text) {
     (match) => `<span class="highlight-error">${match}</span>`
   );
 
+  // "timeout" – standalone anywhere
+  result = result.replace(
+    /\btimeout\b/gi,
+    (match) => `<span class="highlight-error">${match}</span>`
+  );
+
   // "failed" – standalone anywhere
   result = result.replace(
     /\bfailed\b/gi,

@@ -264,6 +264,10 @@ export function renderHistoryList(historyData, container, onSelect) {
     // Format saved time
     const savedDate = new Date(item.timestamp).toLocaleString();
 
+    const convRow = item.conversationId 
+      ? `<div style="font-size: 10px; color: #888; margin-top: 4px; font-family: monospace;">ID: ${item.conversationId}</div>`
+      : '';
+
     div.innerHTML = `
             <div class="h-main">
                 <span class="h-module">${item.startModule}</span>
@@ -273,6 +277,7 @@ export function renderHistoryList(historyData, container, onSelect) {
                 <span>Steps: ${item.logCount}</span>
                 <span>Duration: ${item.duration}</span>
             </div>
+            ${convRow}
         `;
 
     div.onclick = () => onSelect(item);

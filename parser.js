@@ -21,14 +21,14 @@ export function parseAllData(json) {
           .split("T")[1]
           .split("Z")[0]
           .replace("__", ".");
-      } catch (e) {}
+      } catch (e) { }
 
       ivrLogs.push({
         rowId: keyMatch[1],
         fullTime: keyMatch[2], // Keep full time for calculations
         time: displayTime,
         module: keyMatch[3],
-        point: keyMatch[4].replace("__", "."),
+        point: keyMatch[4].replaceAll("__", "."),
         type: valMatch ? valMatch[1].trim() : "Unknown",
         val: valMatch ? valMatch[2].trim() : value,
         desc: valMatch ? valMatch[3].trim() : "",
@@ -71,4 +71,32 @@ export function groupLogsByModule(logs) {
   // Push the final group
   groups.push(currentGroup);
   return groups;
+}
+
+/**
+ * Extracts participant attributes from a conversation API response based on the desired purpose.
+ * @param {Object} conversationJson - The raw JSON response from GET /api/v2/conversations/{id}
+ * @param {string} targetPurpose - The target participant purpose (e.g. "External", "Internal", "customer")
+ * @returns {Object} A formatted object ready for `parseAllData`, or empty object if none found.
+ */
+export function extractAttributesFromConversation(conversationJson, targetPurpose) {
+  if (!conversationJson || !Array.isArray(conversationJson.participants)) {
+    return {};
+  }
+
+  // Find the first participant matching the target purpose (or participantType for older compatibility)
+  const participant = conversationJson.participants.find(p => 
+    p.purpose === targetPurpose || p.participantType === targetPurpose
+  );
+
+  if (participant && participant.attributes) {
+    // Format to match the structure that `parseAllData` expects ({"ATTRIBUTES...": "..."})
+    const formatted = {};
+    for (const [key, value] of Object.entries(participant.attributes)) {
+      formatted[`ATTRIBUTES.${key}`] = value;
+    }
+    return formatted;
+  }
+
+  return {};
 }

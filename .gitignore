@@ -1,1 +1,4 @@
 *.txt
+examples/
+data_action_examples/
+log_examples/
