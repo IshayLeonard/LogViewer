@@ -57,8 +57,11 @@
       <h2>IVR Log Visualization</h2>
 
       <div id="visualization-view">
-        <!-- Back button hidden via CSS -->
-        <button id="backBtn" class="back-btn">← Back</button>
+        <!-- Back button hidden via CSS, export button always visible -->
+        <div class="viz-toolbar">
+          <button id="backBtn" class="back-btn">← Back</button>
+          <button id="exportExcelBtn" class="export-btn" title="Export the full JSON log to Excel">⬇ Export to Excel</button>
+        </div>
 
         <div class="tab-box">
           <button class="tab-btn active" data-tab="timeline">IVR Flow</button>
@@ -83,6 +86,7 @@
       </div>
     </div>
 
+    <script src="vendor/exceljs.min.js"></script>
     <script type="module" src="visualizer.js"></script>
   </body>
 </html>

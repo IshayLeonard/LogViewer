@@ -6,6 +6,7 @@ import {
 } from "./ui.js";
 import { saveToHistory, getHistory } from "./history.js";
 import { checkAuthAndUpdateIcon, getCachedSession } from "./auth.js";
+import { exportJsonToExcel, timestampedName } from "./exportExcel.js";
 
 // DOM Elements
 const homeView = document.getElementById("home-view");
@@ -27,8 +28,13 @@ const fetchBtn = document.getElementById("fetchBtn");
 const authStatus = document.getElementById("authStatus");
 
 const backBtn = document.getElementById("backBtn");
+const exportExcelBtn = document.getElementById("exportExcelBtn");
 const timelineContainer = document.getElementById("timeline");
 const participantBody = document.getElementById("participantBody");
+
+// Tracks the JSON currently shown in the visualization view
+let currentJson = null;
+
 
 // State Management
 function showHome() {
@@ -103,6 +109,9 @@ showPasteModeBtn.addEventListener("click", (e) => {
 
 // Main Visualization Routing
 async function handleVisualize(inputJsonString) {
+  // Keep a reference for the in-popup export button
+  try { currentJson = JSON.parse(inputJsonString); } catch { currentJson = null; }
+
   const settings = await chrome.storage.local.get({ visMode: "tab" }); // Default to tab
   const mode = settings.visMode;
 
@@ -231,6 +240,16 @@ fetchBtn.addEventListener("click", () => {
 // Event: Back Button
 backBtn.addEventListener("click", () => {
   showHome();
+});
+
+// Event: Export to Excel Button (popup mode only)
+exportExcelBtn.addEventListener("click", async () => {
+  if (!currentJson) return;
+  try {
+    await exportJsonToExcel(currentJson, timestampedName());
+  } catch (e) {
+    alert("Excel export failed: " + e.message);
+  }
 });
 
 // Tab Switching Logic
