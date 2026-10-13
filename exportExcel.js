@@ -24,6 +24,14 @@ function formatValue(v) {
   return JSON.stringify(v);
 }
 
+
+// Extract the numeric row ID from ATTRIBUTES.NNN:... keys for sorting.
+// Keys that don't match (plain attributes, other data) return Infinity so they sink to the bottom.
+function rowId(key) {
+  const m = key.match(/^ATTRIBUTES\.(\d+)/);
+  return m ? parseInt(m[1], 10) : Infinity;
+}
+
 export async function exportJsonToExcel(json, fileName = "log.xlsx") {
   if (!window.ExcelJS) {
     throw new Error("ExcelJS library failed to load (vendor/exceljs.min.js).");
@@ -33,7 +41,13 @@ export async function exportJsonToExcel(json, fileName = "log.xlsx") {
   const sheet = workbook.addWorksheet("Log");
   sheet.getColumn(1).width = 120;
 
-  const entries = Object.entries(json);
+  // Sort by row ID (numeric), then alphabetically for non-IVR keys
+  const entries = Object.entries(json).sort(([a], [b]) => {
+    const idA = rowId(a);
+    const idB = rowId(b);
+    if (idA !== idB) return idA - idB;         // numeric sort for IVR rows
+    return a.localeCompare(b);                  // alpha fallback
+  });
 
   sheet.getCell("A1").value = "{";
   sheet.getCell("A1").font = { ...FONT, color: { argb: BLACK } };
