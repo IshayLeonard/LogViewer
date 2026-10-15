@@ -7,8 +7,8 @@
 //
 // Colors are FONT colors (ARGB). Requires vendor/exceljs.min.js (window.ExcelJS).
 
-const RED = "A31515"; // pure red
-const BLUE = "0451A5"; // pure blue
+const RED = "A31515";
+const BLUE = "0451A5";
 const BLACK = "FF000000";
 const EXCEL_CELL_LIMIT = 32767; // max characters per cell
 
@@ -16,7 +16,7 @@ const FONT = { name: "Consolas", size: 11 };
 
 // Trim text so the whole cell (key + ": " + value + ",") stays under Excel's limit.
 function fit(text, max) {
-  return text.length > max ? text.slice(0, Math.max(0, max - 1)) + "…" : text;
+  return text.length > max ? text.slice(0, Math.max(0, max - 4)) + "…" : text;
 }
 
 // Strings/objects are JSON-quoted so the sheet reads like the original JSON.

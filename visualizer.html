@@ -46,6 +46,19 @@
       #backBtn {
         display: none;
       }
+
+      /* Header row: export button far-left, title far-right */
+      .viz-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .viz-title {
+        margin: 0; /* natural left position */
+        font-size: 1.3em;
+        color: #2c3e50;
+      }
       
       .timeline-container {
         max-height: none; /* Let the page scroll or flex container handle it */
@@ -54,13 +67,12 @@
   </head>
   <body>
     <div class="container">
-      <h2>IVR Log Visualization</h2>
-
       <div id="visualization-view">
-        <!-- Back button hidden via CSS, export button always visible -->
-        <div class="viz-toolbar">
+        <!-- Header row: title far-left, export button far-right -->
+        <div class="viz-header">
           <button id="backBtn" class="back-btn">← Back</button>
-          <button id="exportExcelBtn" class="export-btn" title="Export the full JSON log to Excel">⬇ Export to Excel</button>
+          <h2 class="viz-title">IVR Log Visualization</h2>
+          <button id="exportExcelBtn" class="export-btn" style="margin-left:auto" title="Export the full JSON log to Excel">⬇ Export to Excel</button>
         </div>
 
         <div class="tab-box">
