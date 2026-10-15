@@ -55,7 +55,10 @@
 
       <!-- View 2: Visualization -->
       <div id="visualization-view" class="hidden">
-        <button id="backBtn" class="back-btn">← Back</button>
+        <div class="viz-toolbar">
+          <button id="backBtn" class="back-btn">← Back</button>
+          <button id="exportExcelBtn" class="export-btn" title="Export the full JSON log to Excel">⬇ Export to Excel</button>
+        </div>
 
         <div class="tab-box">
           <button class="tab-btn active" data-tab="timeline">IVR Flow</button>
@@ -80,6 +83,7 @@
       </div>
     </div>
 
+    <script src="vendor/exceljs.min.js"></script>
     <script type="module" src="popup.js"></script>
   </body>
 </html>

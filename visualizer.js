@@ -1,8 +1,12 @@
 import { parseAllData } from "./parser.js";
 import { setupFilters, renderParticipantData } from "./ui.js";
+import { exportJsonToExcel, timestampedName } from "./exportExcel.js";
 
 const timelineContainer = document.getElementById("timeline");
 const participantBody = document.getElementById("participantBody");
+const exportExcelBtn = document.getElementById("exportExcelBtn");
+
+let currentJson = null;
 
 // Initialize
 document.addEventListener("DOMContentLoaded", async () => {
@@ -24,6 +28,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+// Export button
+exportExcelBtn.addEventListener("click", async () => {
+  if (!currentJson) return;
+  try {
+    await exportJsonToExcel(currentJson, timestampedName());
+  } catch (e) {
+    alert("Excel export failed: " + e.message);
+  }
+});
+
 // Tab Switching Logic (Copied from popup.js - logic is identical)
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -41,6 +55,7 @@ function visualizeLog(inputJsonString) {
 
   try {
     const json = JSON.parse(inputJsonString);
+    currentJson = json;
     const { ivrLogs, otherData } = parseAllData(json);
 
     // Render Flow (with search + filter bar)

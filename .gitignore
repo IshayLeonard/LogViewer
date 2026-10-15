@@ -1,4 +1,6 @@
 *.txt
-examples/
+browser_token_retrival_examples/
 data_action_examples/
 log_examples/
+examples/
+export_to_excel_example/
